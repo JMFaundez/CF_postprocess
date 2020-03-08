@@ -45,7 +45,7 @@ end
 
 [ny,nx] = size(Xc{1});
 % find BL thickness
-U_inf = 1;
+U_inf = 1.;
 ind_bl = zeros(6,1);
 for i=1:6
     U_av = mean(Uc{i},2);
@@ -57,6 +57,7 @@ for i=1:6
     end
 end
 
+nx = nx  + 1;
 
 for plotId=1:6
     X = Xc{plotId};
@@ -77,7 +78,7 @@ for plotId=1:6
     hold off
     %caxis([minu maxu])
     colorbar()
-    
+
     figure(2001)
     sgtitle('Tangent Velocity')
     subplot(3,2,plotId)
@@ -88,4 +89,40 @@ for plotId=1:6
     %caxis([minU maxU])
     title([x(plotId,:),'% chord'])
     colorbar()
+
+
+    xf = linspace(-0.015,0.015,nx);
+    yf = [0.5 0.8 1 1.5 2 2.5 3]*1e-3;
+    [Xi,Yi] = meshgrid(xf,yf);
+    ui = interp2(X,Y,u, Xi,Yi,'makima');
+
+    FF = fft(ui');
+    size(ui);
+    T = xf(2) - xf(1);
+    L = nx;
+    Fr = 1/T;
+    f = Fr*(0:(L/2))/L;
+    P2 = abs(FF/L);
+    P1 = P2(1:L/2+1,:);
+    P1(2:end-1,:) = 2*P1(2:end-1,:);
+    size(P1);
+
+    lbl = cell(length(yf),1);
+    figure(2002)
+    sgtitle('FFT')
+    subplot(3,2,plotId)
+    hold on
+    for i=1:length(yf)
+      lbl{i} = ['y=',num2str(yf(i), '%10.2e')];
+      plot(1./f, P1(:,i))
+    end
+    xlabel("$\lambda$",'Interpreter','latex')
+    ylabel("$|E(\lambda)|$", 'Interpreter','latex')
+    %caxis([minU maxU])
+    title([x(plotId,:),'% chord'])
+    hold off
+    if plotId==2
+      lbl = char(lbl);
+      legend(lbl, 'Position', [0.9 0.8 0.05 0.1])
+    end
 end
