@@ -2,8 +2,7 @@ close all
 clear all
 clc
 
-
-t = 1;
+t = 0;
 x = ['05' ;'10'; '18'; '25'; '28'; '30'];
 
 % Uncomment if want to re interpolate the data
@@ -19,6 +18,7 @@ Yc = cell(6,1);
 Uc = cell(6,1);
 uc = cell(6,1);
 minU = 100;
+%%
 minu = 100;
 maxU = 0;
 maxu = 0;
@@ -44,17 +44,13 @@ for i=1:6
 end
 
 [ny,nx] = size(Xc{1});
-% find BL thickness
-U_inf = 1.;
-ind_bl = zeros(6,1);
+y99 = zeros(6,1);
+u99 = zeros(6,1);
+dth = zeros(6,1);
+
 for i=1:6
-    U_av = mean(Uc{i},2);
-    for j=1:length(U_av)
-        if U_av(j)>=0.99*U_inf
-            ind_bl(i) = j;
-            break
-        end
-    end
+    xi = str2double(x(i,:))*0.01;
+    [u99(i),y99(i),dth(i)] = uinf(xi);
 end
 
 nx = nx  + 1;
@@ -69,11 +65,17 @@ for plotId=1:6
     sgtitle('Tangent Perturbation')
     subplot(3,2,plotId)
     hold on
-    contourf(X,Y,u,'LineStyle','none')
-    plot(X(1,:),Y(ind_bl(plotId),:),'r-')
-    xlabel('Span')
-    ylabel('Normal')
-    ylim([0, 0.01])
+    xco = X./dth(plotId,1);
+    yco = Y./dth(plotId,1);
+    y99i = y99(plotId)*ones(length(X(1,:)),1)/dth(plotId,1);
+    contourf(xco,yco,u,'LineStyle','none')
+    plot(xco(1,:),y99i,'k-','LineWidth',1.5)
+    %str = 'Boundary Layer';
+    %dim = [.2 .5 .3 .3];
+    %annotation('textbox',dim,'String',str,'FitBoxToText','on')
+    xlabel('Span/$\delta^*$','Interpreter','latex')
+    ylabel('Normal/$\delta^*$','Interpreter','latex')
+    ylim([0, 10])
     title([x(plotId,:),'% chord'])
     hold off
     %caxis([minu maxu])
@@ -82,17 +84,18 @@ for plotId=1:6
     figure(2001)
     sgtitle('Tangent Velocity')
     subplot(3,2,plotId)
-    contourf(X,Y,U,'LineStyle','none')
-    xlabel('Span')
-    ylabel('Normal')
-    ylim([0, 0.01])
+    contourf(xco,yco,U,'LineStyle','none')
+    xlabel('Span/$\delta^*$','Interpreter','latex')
+    ylabel('Normal/$\delta^*$','Interpreter','latex')
+    ylim([0, 10])
     %caxis([minU maxU])
     title([x(plotId,:),'% chord'])
     colorbar()
 
 
     xf = linspace(-0.015,0.015,nx);
-    yf = [0.5 0.8 1 1.5 2 2.5 3]*1e-3;
+    yf = [0.8 1 1.2]*1e-3;
+    %yf = [0.5 0.8 1 1.5 2 2.5 3]*1e-3;
     [Xi,Yi] = meshgrid(xf,yf);
     ui = interp2(X,Y,u, Xi,Yi,'makima');
 
@@ -113,16 +116,17 @@ for plotId=1:6
     subplot(3,2,plotId)
     hold on
     for i=1:length(yf)
-      lbl{i} = ['y=',num2str(yf(i), '%10.2e')];
-      plot(1./f, P1(:,i))
+      lbl{i} = ['y=',num2str(yf(i)/dth(plotId),'%.2f'),'$\delta^*$'];
+      plot(1./f/dth(plotId), P1(:,i),'-o')
+      %semilogx(1./f,P1(:,i),'-')
     end
-    xlabel("$\lambda$",'Interpreter','latex')
-    ylabel("$|E(\lambda)|$", 'Interpreter','latex')
+    xlabel("$\lambda/\delta^*$",'Interpreter','latex')
+    ylabel("$|u'(\lambda)|$", 'Interpreter','latex')
     %caxis([minU maxU])
     title([x(plotId,:),'% chord'])
     hold off
     if plotId==2
       lbl = char(lbl);
-      legend(lbl, 'Position', [0.9 0.8 0.05 0.1])
+      legend(lbl, 'Position', [0.9 0.8 0.05 0.1],'Interpreter','latex')
     end
 end
