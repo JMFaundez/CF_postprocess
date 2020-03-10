@@ -70,9 +70,10 @@ for plotId=1:6
     y99i = y99(plotId)*ones(length(X(1,:)),1)/dth(plotId,1);
     contourf(xco,yco,u,'LineStyle','none')
     plot(xco(1,:),y99i,'k-','LineWidth',1.5)
-    %str = 'Boundary Layer';
-    %dim = [.2 .5 .3 .3];
-    %annotation('textbox',dim,'String',str,'FitBoxToText','on')
+    if plotId==2
+        str = 'Boundary Layer';
+        text(-20,1.2*y99i(1),str)
+    end
     xlabel('Span/$\delta^*$','Interpreter','latex')
     ylabel('Normal/$\delta^*$','Interpreter','latex')
     ylim([0, 10])
@@ -94,7 +95,7 @@ for plotId=1:6
 
 
     xf = linspace(-0.015,0.015,nx);
-    yf = [0.8 1 1.2]*1e-3;
+    yf = [1.0 1.5 2.0]*dth(plotId);
     %yf = [0.5 0.8 1 1.5 2 2.5 3]*1e-3;
     [Xi,Yi] = meshgrid(xf,yf);
     ui = interp2(X,Y,u, Xi,Yi,'makima');
