@@ -42,9 +42,11 @@ function [u99,y99,dth] = uinf(x)
             break
         end
     end
-    
+
+    nn = zeros(j,1);
+    nn = sqrt((yy(1:j,ind)-yy(1,ind)).^2+(xx(1:j,ind)-xx(1,ind)).^2);
     integrand = 1 - ut(1:j,ind)/Uinf;
-    dth = trapz(yy(1:j,ind),integrand);
+    dth = trapz(nn,integrand);
     
     %figure()
     %hold on

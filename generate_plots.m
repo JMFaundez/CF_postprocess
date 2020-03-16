@@ -49,10 +49,13 @@ u99 = zeros(6,1);
 dth = zeros(6,1);
 
 for i=1:6
-    xi = str2double(x(i,:))*0.01;
-    [u99(i),y99(i),dth(i)] = uinf(xi);
+  xi = str2double(x(i,:))*0.01;
+  [u99(i),y99(i),dth(i)] = uinf(xi);
 end
-
+xRe = 0.0492;
+[aa, bb, cc] = uinf(xRe);
+cc
+dth = cc*ones(6,1);
 nx = nx  + 1;
 
 for plotId=1:6
@@ -61,27 +64,28 @@ for plotId=1:6
     U = Uc{plotId};
     u = uc{plotId};
     Y = Y -min(Y(:));
-    figure(2000)
-    sgtitle('Tangent Perturbation')
-    subplot(3,2,plotId)
-    hold on
     xco = X./dth(plotId,1);
     yco = Y./dth(plotId,1);
     y99i = y99(plotId)*ones(length(X(1,:)),1)/dth(plotId,1);
-    contourf(xco,yco,u,'LineStyle','none')
-    plot(xco(1,:),y99i,'k-','LineWidth',1.5)
-    if plotId==2
+    if plotId>2
+      figure(2000)
+      sgtitle('Tangent Perturbation')
+      subplot(2,2,plotId-2)
+      hold on
+      contourf(xco,yco,u,'LineStyle','none')
+      plot(xco(1,:),y99i,'k-','LineWidth',1.5)
+      if plotId==4
         str = 'Boundary Layer';
-        text(-20,1.2*y99i(1),str)
+        text(-15,1.1*y99i(1),str)
+      end
+      xlabel('Span/$\delta^*$','Interpreter','latex')
+      ylabel('Normal/$\delta^*$','Interpreter','latex')
+      ylim([0, 10])
+      title([x(plotId,:),'% chord'])
+      hold off
+                                %caxis([minu maxu])
+      colorbar()
     end
-    xlabel('Span/$\delta^*$','Interpreter','latex')
-    ylabel('Normal/$\delta^*$','Interpreter','latex')
-    ylim([0, 10])
-    title([x(plotId,:),'% chord'])
-    hold off
-    %caxis([minu maxu])
-    colorbar()
-
     figure(2001)
     sgtitle('Tangent Velocity')
     subplot(3,2,plotId)
@@ -95,7 +99,7 @@ for plotId=1:6
 
 
     xf = linspace(-0.015,0.015,nx);
-    yf = [1.0 1.5 2.0]*dth(plotId);
+    yf = [2. 3. 4.0]*dth(plotId);
     %yf = [0.5 0.8 1 1.5 2 2.5 3]*1e-3;
     [Xi,Yi] = meshgrid(xf,yf);
     ui = interp2(X,Y,u, Xi,Yi,'makima');
@@ -110,24 +114,25 @@ for plotId=1:6
     P1 = P2(1:L/2+1,:);
     P1(2:end-1,:) = 2*P1(2:end-1,:);
     size(P1);
-
-    lbl = cell(length(yf),1);
-    figure(2002)
-    sgtitle('FFT')
-    subplot(3,2,plotId)
-    hold on
-    for i=1:length(yf)
-      lbl{i} = ['y=',num2str(yf(i)/dth(plotId),'%.2f'),'$\delta^*$'];
-      plot(1./f/dth(plotId), P1(:,i),'-o')
-      %semilogx(1./f,P1(:,i),'-')
-    end
-    xlabel("$\lambda/\delta^*$",'Interpreter','latex')
-    ylabel("$|u'(\lambda)|$", 'Interpreter','latex')
-    %caxis([minU maxU])
-    title([x(plotId,:),'% chord'])
-    hold off
-    if plotId==2
-      lbl = char(lbl);
-      legend(lbl, 'Position', [0.9 0.8 0.05 0.1],'Interpreter','latex')
+    if plotId>2
+      lbl = cell(length(yf),1);
+      figure(2002)
+      sgtitle('FFT')
+      subplot(2,2,plotId-2)
+      hold on
+      for i=1:length(yf)
+        lbl{i} = ['y=',num2str(yf(i)/dth(plotId),'%.2f'),'$\delta^*$'];
+        plot(1./f/dth(plotId), P1(:,i),'-o')
+                                %semilogx(1./f,P1(:,i),'-')
+      end
+      xlabel("$\lambda/\delta^*$",'Interpreter','latex')
+      ylabel("$|u'(\lambda)|$", 'Interpreter','latex')
+                                %caxis([minU maxU])
+      title([x(plotId,:),'% chord'])
+      hold off
+      if plotId==4
+        lbl = char(lbl);
+        legend(lbl, 'Position', [0.9 0.8 0.05 0.1],'Interpreter','latex','FontSize', 14)
+      end
     end
 end
